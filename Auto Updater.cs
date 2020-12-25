@@ -32,10 +32,7 @@ namespace AutoUpdater
                     else
                         Client.DownloadFile(DownloadLink, $@"{Application.StartupPath}\{ApplicationName}{TypeOfFile}");
                     //File done downloading
-                    if (TypeOfFile == ".exe" || TypeOfFile == ".dll")
-                        Updater(ApplicationName);
-                    else
-                        Process.GetCurrentProcess().Kill();
+                    Updater(ApplicationName, Type);
                 }
                 Error: MessageBox.Show($"The developer of this application did not define the one of the update paths.", ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -46,17 +43,21 @@ namespace AutoUpdater
                 Process.GetCurrentProcess().Kill();
             }
         }
-        private static void Updater(string ApplicationName)
+        private static void Updater(string ApplicationName, EnumFileType Type)
         {
             string CurrentFolder = Environment.CurrentDirectory;
             string UpdatedFolder = $@"{Environment.CurrentDirectory}\{ApplicationName}";
+            string MainArgs = $"/C choice /C Y /N /D Y /T 5 & Del \"{Application.ExecutablePath}\" & move \"{UpdatedFolder}\\{ApplicationName}.{FileType(Type)}\" \"{CurrentFolder}\\{ApplicationName}.{FileType(Type)}\" & rmdir \"{UpdatedFolder}\"";
+            string ExeArgs = $" & start \"{ApplicationName}\" \"{CurrentFolder}\\{ApplicationName}.{FileType(Type)}\"";
+            if (Type == EnumFileType.Exe)
+                MainArgs += ExeArgs;
             Process.Start(new ProcessStartInfo
             {
                 CreateNoWindow = false,
-                WorkingDirectory = "C:\\Users\\Nebula",
+                WorkingDirectory = Environment.CurrentDirectory,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 FileName = "cmd.exe",
-                Arguments = $"/C choice /C Y /N /D Y /T 5 & Del \"{Application.ExecutablePath}\" & move \"{UpdatedFolder}\\{ApplicationName}.exe\" \"{CurrentFolder}\\{ApplicationName}.exe\" & rmdir \"{UpdatedFolder}\" & start \"Vanguard\" \"{CurrentFolder}\\{ApplicationName}.exe\""
+                Arguments = MainArgs
             });
             Process.GetCurrentProcess().Kill();
         }
